@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Response - Lovable.ai</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .response-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .response-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .response-content {
+            background: var(--gray-50);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(79, 70, 229, 0.1);
+        }
+
+        .response-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+    </style>
+</head>
+<script>
+    function extractHtmlContent(response) {
+        try {
+            const regex = /<[^>]+>/;
+            const match = response.match('$regex');
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = response;
+            const htmlElements = tempDiv.getElementsByTagName('*');
+            console.log(`htmlElements : ${htmlElements.length}`);
+            let htmlContent = '';
+            for (let element of htmlElements) {
+                htmlContent += element.outerHTML;
+                response.replace(`${element.outerHTML}`,'')
+                console.log(`replaced element : ${element.outerHTML}`);
+            }
+
+            // const plainContent = response.replace(regex, '').trim();
+            const plainContent = response;
+            const htmlBlob = new Blob([htmlContent], {type: 'text/html'});
+            const htmlUrl = URL.createObjectURL(htmlBlob);
+            if (htmlContent.length>0) {
+                return {
+                    filePath: htmlUrl,
+                    content: response.trim(),
+                    plainContent: plainContent
+                };
+            }
+            return {
+                filePath: '',
+                content: '',
+                plainContent: plainContent
+            };
+        } catch (error) {
+            console.error('Error extracting HTML content:', error);
+            return {
+                filePath: '',
+                content: '',
+                plainContent: response
+            };
+        }
+    }
+
+    function openHtmlFile(filePath) {
+        // Fetch the HTML file content
+        fetch(filePath)
+            .then(response => response.text())
+            .then(content => {
+                // Get the response content area
+                const responseArea = document.querySelector('.response-content-area');
+                if (responseArea) {
+                    // Create a container for the HTML content
+                    const htmlContainer = document.createElement('div');
+                    htmlContainer.classList.add('html-preview');
+                    htmlContainer.innerHTML = content;
+                    
+                    // Append the HTML content
+                    responseArea.appendChild(htmlContainer);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading HTML file:', error);
+            });
+    }
+
+    function getTextAndButtonContent(response) {
+        const containerDiv = document.createElement('div');
+        const plainDiv = document.createElement('div');
+        const cardDiv = document.createElement('div');    
+        plainDiv.innerHTML = response;
+
+        try {
+            // const regex = /```html*(.*?)*html>\n```/;
+            const content_new = extractHtmlContent(response)
+            if(content_new.plainContent.length>0) {
+                plainDiv.innerHTML = content_new.plainContent;
+                if(content_new.filePath.length>0) {
+                    const button = document.createElement('button');
+                    button.style = 'cursor: pointer; color: #4f46e5;'
+                    button.textContent = 'View Page';
+                    button.onclick = openHtmlFile(content_new.filePath);
+                    cardDiv.appendChild(button)
+                }
+                containerDiv.append(plainDiv, cardDiv)
+            }
+            return containerDiv;
+        } catch (error) {
+            console.error('Error extracting HTML content:', error);
+            return plainDiv;
+        }
+        return plainDiv;
+    }
+    // write a function to perform get api call and get response    
+</script>
+
+<body>
+    <div class="response-container">
+        <div class="response-header">
+            <h1>Generated Response</h1>
+            <p>Here's what we generated based on your input</p>
+        </div>
+        <style>
+            .chat-sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 320px;
+                height: 100vh;
+                background: var(--white);
+                box-shadow: var(--shadow-md);
+                padding: 2rem;
+                overflow-y: auto;
+            }
+
+            .chat-history {
+                margin-bottom: 2rem;
+            }
+
+            .chat-item {
+                padding: 1rem;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                background: var(--gray-50);
+                border: 1px solid rgba(79, 70, 229, 0.1);
+                overflow: visible;
+                display: block;
+            }
+
+            .chat-item.current {
+                border: 2px solid var(--primary);
+                overflow: visible;
+                display: block;
+            }
+
+            .chat-prompt {
+                font-weight: 500;
+                margin-bottom: 0.5rem;
+                overflow: visible;
+                display: block;
+            }
+
+            .chat-response {
+                font-size: 0.9rem;
+                overflow: visible;
+                color: var(--text-dark);
+                opacity: 0.8;
+                display: block;
+            }
+
+            .new-prompt-form {
+                position: sticky;
+                bottom: 0;
+                background: var(--white);
+                padding: 1rem 0;
+                overflow: visible;
+                display: block;
+            }
+
+            .new-prompt-input {
+                width: 100%;
+                padding: 0.75rem;
+                border: 1px solid rgba(79, 70, 229, 0.2);
+                border-radius: 8px;
+                margin-bottom: 0.5rem;
+                resize: vertical;
+            }
+
+            .submit-prompt {
+                width: 100%;
+                padding: 0.75rem;
+                background: var(--primary);
+                color: var(--white);
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: opacity 0.3s ease;
+            }
+
+            .submit-prompt:hover {
+                opacity: 0.9;
+            }
+
+            /* Adjust main content to make room for sidebar */
+            .response-container {
+                margin-left: 320px;
+            }
+        </style>
+
+        <div class="chat-sidebar">
+            <div id="chat-history-area" class="chat-history">
+                <div class="chat-item current">
+                    <div class="chat-prompt">{{ prompt }}</div>
+                    <div class="chat-response">{{ result[:100] + '...' if result|length > 100 else result }}</div>
+                </div>
+                {% for chat in chat_history %}
+                <div class="chat-item">
+                    <div class="chat-prompt">{{ chat.prompt }}</div>
+                    <div class="chat-response">{{ chat.response[:100] + '...' if chat.response|length > 100 else chat.response }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form class="new-prompt-form" action="{{ url_for('generate') }}" method="post">
+                <textarea 
+                    name="user_input" 
+                    class="new-prompt-input" 
+                    placeholder="Enter your prompt here..."
+                    rows="4"
+                    required
+                ></textarea>
+                <button type="submit" class="submit-prompt">Generate Response</button>
+            </form>
+        </div>
+        
+        <div id="response-content-area" class="response-content">
+            <div id="plain-view-area" class="response-text">
+                
+                {getTextAndButtonContent(result if result else 'No input provided')}
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
+        </div>
+    </div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const responseText = document.querySelector('.response-text').textContent;
+        const extractedContent = extractHtmlContent(responseText);
+
+        // if (extractedContent.filePath) {
+        //     openHtmlFile(extractedContent.filePath)
+        //     const chatHistory = document.getElementById('chat-history-area');
+
+        //     const viewArea =  document.getElementById('plain-view-area');
+        //     viewArea.innerHTML = extractedContent.plainContent;
+
+        //     const htmlCard = document.createElement('div');
+        //     htmlCard.className = 'chat-item';
+        //     htmlCard.innerHTML = `
+        //         <div class="chat-prompt" style="cursor: pointer; color: #4f46e5;">
+        //             View HTML Content
+        //         </div>
+        //     `;
+            
+        //     htmlCard.addEventListener('click', function() {
+        //         // Store HTML content in session storage
+        //         sessionStorage.setItem('previewHtml', extractedContent.content);
+        //         // Open preview in new window/tab
+        //         window.open(extractedContent.filePath, '_blank');
+        //     });
+
+        //     chatHistory.insertBefore(htmlCard, chatHistory.firstChild);
+        // }
+    });
+</script>
+
+</html> 
