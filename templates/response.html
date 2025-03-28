@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Response - Lovable.ai</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .response-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .response-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .response-content {
+            background: var(--gray-50);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(79, 70, 229, 0.1);
+        }
+
+        .response-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+
+        .view-page-button {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-dark);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 8px;
+            border: 2px solid var(--primary-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .chat-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .chat-history {
+            margin-bottom: 2rem;
+        }
+
+        .chat-item {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            background: var(--gray-50);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            overflow: visible;
+            display: block;
+        }
+
+        .chat-item.current {
+            border: 2px solid var(--primary);
+            overflow: visible;
+            display: block;
+        }
+
+        .chat-prompt {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            overflow: visible;
+            display: block;
+        }
+
+        .chat-response {
+            font-size: 0.9rem;
+            overflow: visible;
+            color: var(--text-dark);
+            opacity: 0.8;
+            display: block;
+        }
+
+        .new-prompt-form {
+            position: sticky;
+            bottom: 0;
+            background: var(--white);
+            padding: 1rem 0;
+            overflow: visible;
+            display: block;
+        }
+
+        .new-prompt-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            resize: vertical;
+        }
+
+        .submit-prompt {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-prompt:hover {
+            opacity: 0.9;
+        }
+
+        /* Adjust main content to make room for sidebar */
+        .response-container {
+            margin-left: 320px;
+        }
+    </style>
+</head>
+<script>
+    function extractHtmlContent(response) {
+        try {
+            const regex = /<[^>]+>/;
+            const final_regex = "```html\s*\n([\s\S]*?)\n\s*```"
+            const match = response.match('$regex');
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = response;
+            const htmlElements = tempDiv.getElementsByTagName('*');
+            console.log(`htmlElements : ${htmlElements.length}`);
+            let htmlContent = '';
+            for (let element of htmlElements) {
+                htmlContent += element.outerHTML;
+                response = response.replace(`${element.outerHTML}\n`,'')
+                console.log(`replaced element : ${element.outerHTML}`);
+            }
+            if(htmlElements.length>0) {
+                response = response.replace(`${final_regex}`,'')
+                response = response.replace('```html','').trim()
+                response = response.replaceAll(" \n", "")
+                response = response.replaceAll("```", "")
+                response = response.replaceAll(".\n\n", "")
+                response = response.replaceAll("   ", "")
+                response = response.replaceAll("\n\n", "")
+            }
+
+            // const plainContent = response.replace(regex, '').trim();
+            const plainContent = response;
+            const htmlBlob = new Blob([htmlContent], {type: 'text/html'});
+            const htmlUrl = URL.createObjectURL(htmlBlob);
+            if (htmlContent.length>0) {
+                return {
+                    filePath: htmlUrl,
+                    content: response.trim(),
+                    plainContent: plainContent
+                };
+            }
+            return {
+                filePath: '',
+                content: '',
+                plainContent: plainContent
+            };
+        } catch (error) {
+            console.error('Error extracting HTML content:', error);
+            return {
+                filePath: '',
+                content: '',
+                plainContent: response
+            };
+        }
+    }
+
+    function openHtmlFile(filePath) {
+        // Fetch the HTML file content
+        fetch(filePath)
+            .then(response => response.text())
+            .then(content => {
+                // Get the response content area
+                const responseArea = document.querySelector('.response-content-area');
+                if (responseArea) {
+                    // Create a container for the HTML content
+                    const htmlContainer = document.createElement('div');
+                    htmlContainer.classList.add('html-preview');
+                    htmlContainer.innerHTML = content;
+                    
+                    // Append the HTML content
+                    responseArea.appendChild(htmlContainer);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading HTML file:', error);
+            });
+    }
+
+    function getTextAndButtonContent(response) {
+        const contentArea = document.getElementById('plain-view-area');
+
+        const containerDiv = document.createElement('div');
+        const plainDiv = document.createElement('div');
+        const cardDiv = document.createElement('div');    
+        const breakDiv = document.createElement('br');
+        plainDiv.innerHTML = response;
+
+        try {
+            const content_new = extractHtmlContent(response)
+            if(content_new.plainContent.length>0) {
+                plainDiv.innerHTML = content_new.plainContent;
+                if(content_new.filePath.length>0) {
+                    const button = document.createElement('button');
+                    button.className = 'view-page-button';
+                    button.style = 'cursor: pointer;;'
+                    button.textContent = 'View Page';
+                    button.addEventListener('click', function () {
+                        window.open(content_new.filePath, "_blank");
+                    })
+                    cardDiv.appendChild(button)
+                }
+                containerDiv.append(cardDiv, breakDiv, plainDiv)
+            }
+            contentArea.replaceChildren(containerDiv);
+        } catch (error) {
+            console.error('Error extracting HTML content:', error);
+            contentArea.replaceChildren(plainDiv);
+        }
+    }
+    
+    async function chat() {
+        const chatArea = document.getElementById('chat-history-area');
+        const promptField = document.getElementById('chat-prompt');
+        const prompt = promptField.text;
+        url = "{{url_for('chat', user_input=__PROMPT__)}}".replace('__PROMPT__', prompt);
+        try {
+            const response = await fetch(url, {
+                method: "POST", // Change to "POST" if needed
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json(); // Convert response to JSON
+            if("response" in data) {
+                const chatField = document.createElement('div');
+                chatField.className = 'chat-item current';
+                chatField.innerHTML = `<div class="chat-response">${data['response']}</div>`;
+                chatArea.append(chatField);
+                chatArea.addEventListener('click', function() {getTextAndButtonContent(data['response']);});
+                
+            }
+            return data;
+        } catch (error) {
+            console.error("Error fetching chat data:", error);
+            return null; // Return null in case of an error
+        }
+    }
+</script>
+
+<body class="body-container">
+    <div class="response-container">
+        <div class="response-header">
+            <h1>Generated Response</h1>
+            <p>Here's what we generated based on your input</p>
+        </div>
+
+        <div class="chat-sidebar">
+            <div id="chat-history-area" class="chat-history">
+                <div class="chat-item current">
+                    <div class="chat-prompt">{{ prompt }}</div>
+                    <div class="chat-response">{{ result }}</div>
+                </div>
+                {% for chat in chat_history %}
+                <div class="chat-item">
+                    <div class="chat-prompt">{{ chat.prompt }}</div>
+                    <div class="chat-response">{{ chat.response[] + '...' if chat.response|length > 100 else chat.response }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form id="chat-form" class="new-prompt-form" method="post">
+                <textarea 
+                    id="chat-prompt"
+                    name="user_input" 
+                    class="new-prompt-input" 
+                    placeholder="Enter your prompt here..."
+                    rows="4"
+                    required
+                ></textarea>
+                <button id="chat-button" type="submit" class="submit-prompt" onsubmit="chat()">Generate Response</button>
+            </form>
+        </div>
+        
+        <div id="response-content-area" class="response-content">
+            <div id="plain-view-area" class="response-text">
+                {{result if result else 'No input provided'}}
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
+        </div>
+    </div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const responseText = document.querySelector('.response-text').textContent;
+
+        document.getElementById('chat-button').addEventListener('click', function () { chat(); });
+
+        getTextAndButtonContent(responseText);
+
+        document.getElementById('chat-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+        });
+    });
+</script>
+
+</html> 
