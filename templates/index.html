@@ -58,12 +58,18 @@
     </style>
 </head>
 <body>
+    <script>
+        function submitForm() {
+            document.getElementById('input-area').value = 'Hi. Please describe yourself in 100 words or less.'
+            document.getElementById('entry-form').submit();
+        }
+    </script>
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
             <h1>Transform Customer Engagement with AI</h1>
             <p>Lovable.ai helps businesses create meaningful connections with their customers through intelligent, personalized interactions powered by cutting-edge AI technology.</p>
-            <a href="#get-started" class="btn">Get Started Free</a>
+            <a onclick="submitForm()" class="btn">Get Started Free</a>
         </div>
     </section>
 
@@ -107,8 +113,8 @@
         <div class="input-section">
             <h2>Try It Now</h2>
             <p>Enter your text below to see how our AI can help you</p>
-            <form action="{{ url_for('generate') }}" method="POST" class="input-form">
-                <textarea name="user_input" class="input-field" rows="4" placeholder="Enter your text here..." required></textarea>
+            <form id="entry-form" action="{{ url_for('generate') }}" method="POST" class="input-form">
+                <textarea id="input-area" name="user_input" class="input-field" rows="4" placeholder="Enter your text here..." required></textarea>
                 <button type="submit" class="submit-btn">Generate Response</button>
             </form>
         </div>

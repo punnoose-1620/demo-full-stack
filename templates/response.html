@@ -66,6 +66,91 @@
             background: var(--primary);
             color: var(--white);
         }
+
+        .chat-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .chat-history {
+            margin-bottom: 2rem;
+        }
+
+        .chat-item {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            background: var(--gray-50);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            overflow: visible;
+            display: block;
+        }
+
+        .chat-item.current {
+            border: 2px solid var(--primary);
+            overflow: visible;
+            display: block;
+        }
+
+        .chat-prompt {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            overflow: visible;
+            display: block;
+        }
+
+        .chat-response {
+            font-size: 0.9rem;
+            overflow: visible;
+            color: var(--text-dark);
+            opacity: 0.8;
+            display: block;
+        }
+
+        .new-prompt-form {
+            position: sticky;
+            bottom: 0;
+            background: var(--white);
+            padding: 1rem 0;
+            overflow: visible;
+            display: block;
+        }
+
+        .new-prompt-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            resize: vertical;
+        }
+
+        .submit-prompt {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-prompt:hover {
+            opacity: 0.9;
+        }
+
+        /* Adjust main content to make room for sidebar */
+        .response-container {
+            margin-left: 320px;
+        }
     </style>
 </head>
 <script>
@@ -199,6 +284,7 @@
                 chatField.innerHTML = `<div class="chat-response">${data['response']}</div>`;
                 chatArea.append(chatField);
                 chatArea.addEventListener('click', function() {getTextAndButtonContent(data['response']);});
+                
             }
             return data;
         } catch (error) {
@@ -208,98 +294,12 @@
     }
 </script>
 
-<body>
+<body class="body-container">
     <div class="response-container">
         <div class="response-header">
             <h1>Generated Response</h1>
             <p>Here's what we generated based on your input</p>
         </div>
-        <style>
-            .chat-sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                width: 320px;
-                height: 100vh;
-                background: var(--white);
-                box-shadow: var(--shadow-md);
-                padding: 2rem;
-                overflow-y: auto;
-            }
-
-            .chat-history {
-                margin-bottom: 2rem;
-            }
-
-            .chat-item {
-                padding: 1rem;
-                border-radius: 8px;
-                margin-bottom: 1rem;
-                background: var(--gray-50);
-                border: 1px solid rgba(79, 70, 229, 0.1);
-                overflow: visible;
-                display: block;
-            }
-
-            .chat-item.current {
-                border: 2px solid var(--primary);
-                overflow: visible;
-                display: block;
-            }
-
-            .chat-prompt {
-                font-weight: 500;
-                margin-bottom: 0.5rem;
-                overflow: visible;
-                display: block;
-            }
-
-            .chat-response {
-                font-size: 0.9rem;
-                overflow: visible;
-                color: var(--text-dark);
-                opacity: 0.8;
-                display: block;
-            }
-
-            .new-prompt-form {
-                position: sticky;
-                bottom: 0;
-                background: var(--white);
-                padding: 1rem 0;
-                overflow: visible;
-                display: block;
-            }
-
-            .new-prompt-input {
-                width: 100%;
-                padding: 0.75rem;
-                border: 1px solid rgba(79, 70, 229, 0.2);
-                border-radius: 8px;
-                margin-bottom: 0.5rem;
-                resize: vertical;
-            }
-
-            .submit-prompt {
-                width: 100%;
-                padding: 0.75rem;
-                background: var(--primary);
-                color: var(--white);
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: opacity 0.3s ease;
-            }
-
-            .submit-prompt:hover {
-                opacity: 0.9;
-            }
-
-            /* Adjust main content to make room for sidebar */
-            .response-container {
-                margin-left: 320px;
-            }
-        </style>
 
         <div class="chat-sidebar">
             <div id="chat-history-area" class="chat-history">
